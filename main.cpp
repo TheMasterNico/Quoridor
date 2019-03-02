@@ -82,7 +82,8 @@ void ImprimirTablero()
 
 
 
-            if(j < 8 && i == j && PosMuros[j] == Y) cout << "#";
+            if(j < 8 && i == j && PosMuros[j] == Y) cout << "#"; // Pone el # en la linea jugable
+            else if(j < 8 && i > 0 && j == i-1 && PosMuros[j] == Y) cout << "#";
             else cout << " "; // Acá puede haber un muro vertical
 
         }
@@ -97,7 +98,7 @@ void ImprimirTablero()
             }
             else
             {
-                if(j < 8 && j == i && PosMuros[j] == Y) cout << " #";
+                if(j < 8 && j == i && PosMuros[j] == Y) cout << " #"; // Pone el # en la linea de espacios con un espacio antes
                 else cout << "  ";
             }
         }
@@ -255,6 +256,8 @@ int main ()
     fill_n(PosMuros, 8, -1);
     fill_n(NextMuro, 8, -1);
     PosMuros[1] = Y;
+    PosMuros[3] = Y;
+    PosMuros[4] = X;
     ImprimirTablero();
     GameLoop();
     return 0;

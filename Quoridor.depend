@@ -1,7 +1,8 @@
 # depslib dependency file v1.0
-1551290047 source:c:\users\makot\onedrive\documents\nsch\quoridor\main.cpp
+1551553345 source:c:\users\makot\onedrive\documents\nsch\quoridor\main.cpp
 	<iostream>
 	<stdio.h>
 	<conio.h>
 	<windows.h>
+	<algorithm>
 
