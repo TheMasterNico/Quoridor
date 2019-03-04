@@ -90,18 +90,21 @@ void ImprimirTablero()
                 else cout << "\xB1"; // Se pone el cuadro jugable"
             }
 
-
-            if(NextMuro[j][i] == -1)
-            {
-                if(j < 8 && i < 8 && PosMuros[j][i] == Y) cout << "1"; // Pone el # en la linea jugable
-                else if(j < 8 && i > 0 && i < 8 && PosMuros[j][i-1] == Y) cout << "2";
-                else cout << " "; // Acá puede haber un muro vertical
-            }
+            if(j < 8 && i > 0 && NextMuro[j][i-1] == Y) cout << "5";
             else
             {
-                if(j < 8 && i < 8 && NextMuro[j][i] == Y) cout << "%"; // Pone el # en la linea jugable
-                else if(j < 8 && i > 0 && i < 8 && NextMuro[j][i-1] == Y) cout << "%";
-                else cout << " "; // Acá puede haber un muro vertical
+                if(NextMuro[j][i] != -1)
+                {
+                    if(j < 8 && i < 8 && NextMuro[j][i] == Y) cout << "4"; // Pone el # en la linea jugable
+                    else if(j < 8 && i > 0 && i < 8 && PosMuros[j][i-1] == Y) cout << "2"; else cout << " "; // Acá puede haber un muro vertical
+                    //La comprobación de la linea de arriba es para poner el 2
+                }
+                else
+                {
+                    if(j < 8 && i < 8 && PosMuros[j][i] == Y) cout << "1"; // Pone el # en la linea jugable
+                    else if(j < 8 && i > 0 && i < 8 && PosMuros[j][i-1] == Y && NextMuro[j][i-1] == -1) cout << "2";
+                    else cout << " "; // Acá puede haber un muro vertical
+                }
             }
 
 
@@ -112,15 +115,15 @@ void ImprimirTablero()
         for(int j = 0; j < 9; j++)
         {
             if(j < 8 && i < 8 && NextMuro[j][i] == X) cout << "@@@";
-            if(j < 8 && i < 8 && PosMuros[j][i] == X) cout << "###";
+            else if(j < 8 && i < 8 && PosMuros[j][i] == X) cout << "###";
             else if(j < 8 && j > 0 && i < 8 && PosMuros[j-1][i] == X) // Si en la anterior hay muro
             {
                 cout << " "; // Acá puede haber un muro horizontal
             }
             else
             {
-                if(j < 8 && i < 8 && NextMuro[j][i] == Y) cout << " %";
                 if(j < 8 && i < 8 && PosMuros[j][i] == Y) cout << " 3"; // Pone el # en la linea de espacios con un espacio antes
+                else if(j < 8 && i < 8 && NextMuro[j][i] == Y) cout << " 6";
                 else cout << "  ";
             }
         }
@@ -207,6 +210,7 @@ void GameLoop()
         if(kbhit()) // Detecto la presion de una tecla
         {
             c = getch();
+            //cout << "Letra: " << c << endl;
             if(c == 27) break; // tecla ESC
             else if(c == 13) // Presiona Enter y hace su movimiento
             {
@@ -225,7 +229,15 @@ void GameLoop()
                 if(c == 9) // Presiona TAB :: Cambia entre peon, y muro
                 {
                     FichaActual = (FichaActual == PEON)?(MURO):(PEON);
+                    IDXMuro = IDYMuro = 0;
+                    memset( &NextMuro[0][0], -1, sizeof(NextMuro) );
                     NextMuro[IDXMuro][IDYMuro] = X;
+                    ImprimirTablero();
+                    continue;
+                }
+                if((c == 111 || c == 79) && FichaActual == MURO) // presiona la letra O ó o (Mayuscula y minuscula)
+                {
+                    NextMuro[IDXMuro][IDYMuro] = (NextMuro[IDXMuro][IDYMuro] == X)?(Y):(X);
                     ImprimirTablero();
                     continue;
                 }
