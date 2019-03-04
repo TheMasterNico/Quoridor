@@ -20,8 +20,10 @@
 
 using namespace std;
 
-int PosMuros[8] = {-1}; //[PosMuro] = X o Y
-int NextMuro[8] = {-1};
+int PosMuros[8][8] = {-1}; //[PosMuroX][PosMuroY] = X o Y (Si esta vertical u horizontal
+int NextMuro[8][8] = {-1};
+int IDXMuro = 0;
+int IDYMuro = 0;
 int Posicion[2][2] = {{4, 0}, {4, 8}}; // X, Y
 int NextPosi[2][2] = {{4, 0}, {4, 8}}; // X, Y
 
@@ -44,8 +46,16 @@ void Debug()
     cout << "Posicion[A][Y]: " << Posicion[A][Y] << " __ NextPosi[A][Y]: " << NextPosi[A][Y] << endl;
     cout << "Posicion[B][X]: " << Posicion[B][X] << " __ NextPosi[B][X]: " << NextPosi[B][X] << endl;
     cout << "Posicion[B][Y]: " << Posicion[B][Y] << " __ NextPosi[B][Y]: " << NextPosi[B][Y] << endl;
-    for(int j = 0; j < 8; j++) cout << "PosMuros[" << j << "] = " << PosMuros[j] << ";";
-    for(int j = 0; j < 8; j++) cout << "NextMuro[" << j << "] = " << NextMuro[j] << ";";
+    /*for(int j = 0; j < 8; j++) cout << "PosMuros[" << j << "] = " << PosMuros[j] << ";";*/
+    for(int j = 0; j < 8; j++)
+    {
+        for(int i = 0; i < 8; i++)
+        {
+            cout << "NM[" << j << "][" << i << "] = " << NextMuro[j][i] << "; ";
+        }
+        cout << endl;
+    }
+    cout << "IDXMuro: " << IDXMuro << " IDYMuro: " << IDYMuro;
     cout << "\n";
 }
 
@@ -81,24 +91,36 @@ void ImprimirTablero()
             }
 
 
+            if(NextMuro[j][i] == -1)
+            {
+                if(j < 8 && i < 8 && PosMuros[j][i] == Y) cout << "1"; // Pone el # en la linea jugable
+                else if(j < 8 && i > 0 && i < 8 && PosMuros[j][i-1] == Y) cout << "2";
+                else cout << " "; // Acá puede haber un muro vertical
+            }
+            else
+            {
+                if(j < 8 && i < 8 && NextMuro[j][i] == Y) cout << "%"; // Pone el # en la linea jugable
+                else if(j < 8 && i > 0 && i < 8 && NextMuro[j][i-1] == Y) cout << "%";
+                else cout << " "; // Acá puede haber un muro vertical
+            }
 
-            if(j < 8 && i == j && PosMuros[j] == Y) cout << "#"; // Pone el # en la linea jugable
-            else if(j < 8 && i > 0 && j == i-1 && PosMuros[j] == Y) cout << "#";
-            else cout << " "; // Acá puede haber un muro vertical
+
 
         }
         cout << "\xBA" << endl; // Saltamos de linea para dejar espacio a los muros horizontales
         cout << " " << i << " \xBA ";
         for(int j = 0; j < 9; j++)
         {
-            if(j < 8 && j == i && PosMuros[j] == X) cout << "###";
-            else if(j < 8 && j-1 == i && j > 0 && PosMuros[j-1] == X) // Si en la anterior hay muro
+            if(j < 8 && i < 8 && NextMuro[j][i] == X) cout << "@@@";
+            if(j < 8 && i < 8 && PosMuros[j][i] == X) cout << "###";
+            else if(j < 8 && j > 0 && i < 8 && PosMuros[j-1][i] == X) // Si en la anterior hay muro
             {
                 cout << " "; // Acá puede haber un muro horizontal
             }
             else
             {
-                if(j < 8 && j == i && PosMuros[j] == Y) cout << " #"; // Pone el # en la linea de espacios con un espacio antes
+                if(j < 8 && i < 8 && NextMuro[j][i] == Y) cout << " %";
+                if(j < 8 && i < 8 && PosMuros[j][i] == Y) cout << " 3"; // Pone el # en la linea de espacios con un espacio antes
                 else cout << "  ";
             }
         }
@@ -203,6 +225,7 @@ void GameLoop()
                 if(c == 9) // Presiona TAB :: Cambia entre peon, y muro
                 {
                     FichaActual = (FichaActual == PEON)?(MURO):(PEON);
+                    NextMuro[IDXMuro][IDYMuro] = X;
                     ImprimirTablero();
                     continue;
                 }
@@ -214,8 +237,7 @@ void GameLoop()
                     NextPosi[Turno][Y] = Posicion[Turno][Y];
                     if(c == 72)  // Flecha arriba
                     {
-                        if(FichaActual == PEON) NextPosi[Turno][Y] = Posicion[Turno][Y] - MoverCasillas;
-                        //else NextMuro[]
+                        NextPosi[Turno][Y] = Posicion[Turno][Y] - MoverCasillas;
                     }
                     else if(c == 80) // Flecha abajo
                     {
@@ -238,26 +260,54 @@ void GameLoop()
                         Mensaje = "Mueves dos casillas saltando al enemigo.";
                         goto Mover2Casillas;
                     }
+                    ImprimirTablero();
                 }
                 else // Esta moviendo el Muro
                 {
-
+                    if(c == 75) // Felcha Izq
+                    {
+                        IDXMuro--;
+                        NextMuro[((IDXMuro < 0)?(7):(IDXMuro))][IDYMuro] = NextMuro[IDXMuro+1][IDYMuro]; // Pone la X o Y que tenia anteriormente
+                        NextMuro[IDXMuro+1][IDYMuro] = -1; // Al que tenia anterior lo setea en -1 para que no aparezca
+                    }
+                    else if(c == 77) // Flecha derecha
+                    {
+                        IDXMuro++;
+                        NextMuro[((IDXMuro > 7)?(0):(IDXMuro))][IDYMuro] = NextMuro[IDXMuro-1][IDYMuro]; // Pone la X o Y que tenia anteriormente
+                        NextMuro[IDXMuro-1][IDYMuro] = -1; // Al que tenia anterior lo setea en -1 para que no aparezca
+                    }
+                    else if(c == 72)  // Flecha arriba
+                    {
+                        IDYMuro--;
+                        NextMuro[IDXMuro][((IDYMuro < 0)?(7):(IDYMuro))] = NextMuro[IDXMuro][IDYMuro+1]; // Pone la X o Y que tenia anteriormente
+                        NextMuro[IDXMuro][IDYMuro+1] = -1; // Al que tenia anterior lo setea en -1 para que no aparezca
+                    }
+                    else if(c == 80) // Flecha abajo
+                    {
+                        IDYMuro++;
+                        NextMuro[IDXMuro][((IDYMuro > 7)?(0):(IDYMuro))] = NextMuro[IDXMuro][IDYMuro-1]; // Pone la X o Y que tenia anteriormente
+                        NextMuro[IDXMuro][IDYMuro-1] = -1; // Al que tenia anterior lo setea en -1 para que no aparezca
+                    }
+                    if(IDXMuro < 0) IDXMuro = 7;
+                    else if(IDXMuro > 7) IDXMuro = 0;
+                    if(IDYMuro > 7) IDYMuro = 0;
+                    else if(IDYMuro < 0) IDYMuro = 7;
+                    ImprimirTablero();
                 }
             }
-            ImprimirTablero();
 
         }
-        Sleep(20);
+        //Sleep(20);
     }
 }
 
 int main ()
 {
-    fill_n(PosMuros, 8, -1);
-    fill_n(NextMuro, 8, -1);
-    PosMuros[1] = Y;
-    PosMuros[3] = Y;
-    PosMuros[4] = X;
+    memset( &PosMuros[0][0], -1, sizeof(PosMuros) );
+    memset( &NextMuro[0][0], -1, sizeof(NextMuro) );
+    PosMuros[1][1] = Y;
+    PosMuros[3][1] = Y;
+    PosMuros[4][7] = X;
     ImprimirTablero();
     GameLoop();
     return 0;
