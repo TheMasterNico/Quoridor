@@ -460,8 +460,14 @@ void CambiarFicha()
         {
             FichaActual = PEON;
             Mensaje = "Ya no tienes muros disponibles para usar";
+            Beep(800, 252);
         }
-        else NextMuro[IDXMuro][IDYMuro] = X;
+        else
+        {
+            NextMuro[IDXMuro][IDYMuro] = X;
+            NextPosi[Turno][X] = Posicion[Turno][X];
+            NextPosi[Turno][Y] = Posicion[Turno][Y];
+        }
 
     }
 }
@@ -496,6 +502,7 @@ void GameLoop()
                     {
                         // Gana el jugador en Turno
                         ImprimirTablero();
+                        system ("pause");
                         break;
                     }
                 }
