@@ -27,7 +27,7 @@ int IDYMuro = 0;
 int Posicion[2][2] = {{4, 0}, {4, 8}}; // X, Y
 int NextPosi[2][2] = {{4, 0}, {4, 8}}; // X, Y
 
-bool FlagA[8][8], FlagB[8][8];
+bool FlagA[9][9], FlagB[9][9];
 
 int MurosTotales[2] = {5, 5};
 bool Turno = A; // False: Turno de A || True: Turno de B
@@ -38,16 +38,11 @@ string Mensaje = "";
 
 void Debug()
 {
-    cout << "\n";
-
-    /*for(int i = 0; i < 8; i++)
-    {
-        for(int j = 0; j < 8; j++) cout << "PosMuros[" << i << "][" << j << "]: " << PosMuros[i][j] << endl;
-    }*/
+    /*cout << "\n";
     cout << "Posicion[A][X]: " << Posicion[A][X] << " __ NextPosi[A][X]: " << NextPosi[A][X] << endl;
     cout << "Posicion[A][Y]: " << Posicion[A][Y] << " __ NextPosi[A][Y]: " << NextPosi[A][Y] << endl;
     cout << "Posicion[B][X]: " << Posicion[B][X] << " __ NextPosi[B][X]: " << NextPosi[B][X] << endl;
-    cout << "Posicion[B][Y]: " << Posicion[B][Y] << " __ NextPosi[B][Y]: " << NextPosi[B][Y] << endl;
+    cout << "Posicion[B][Y]: " << Posicion[B][Y] << " __ NextPosi[B][Y]: " << NextPosi[B][Y] << endl;*/
 
     /*for(int j = 0; j < 8; j++)
     {
@@ -57,6 +52,7 @@ void Debug()
         }
         cout << endl;
     }*/
+
     /*for(int j = 0; j < 8; j++)
     {
         for(int i = 0; i < 8; i++)
@@ -65,8 +61,9 @@ void Debug()
         }
         cout << endl;
     }*/
-    cout << "IDXMuro: " << IDXMuro << " IDYMuro: " << IDYMuro;
-    cout << "\n";
+
+    /*cout << "IDXMuro: " << IDXMuro << " IDYMuro: " << IDYMuro;
+    cout << "\n";*/
 }
 
 void ImprimirTablero()
@@ -224,8 +221,110 @@ int ComprobarProximaPos(int DaEnter = 0, int UPorIZQ = 3) //0 UP
     }
     return 1;
 }
+#define debuger cout << "NX: " << NX << " NY: " << NY << " AX: " << AX << " AY: " << AY << endl;
+bool Salida(int Jugador, int AX, int AY, int D)
+{
+    //system("pause");
+    int NY, NX;
+    NY = AY;
+    NX = AX;
+    if(D == 1) // Arriba
+    {
+        cout << "UP\n";
+    }
+    else if(D == 2) // Derecha
+    {
+        cout << "der\n";
+    }
+    else if(D == 3) // Abajo
+    {
+        cout << "aba\n";
+    }
+    else if(D == 4) // Izquierda
+    {
+        cout << "izq\n";
+    }
 
-bool Salida(int Jugador, int PosX, int PosY, int Dire)
+    if(D == 1) // Arriba
+    {
+        NY--;debuger
+        if(NY < 0)
+        {
+            cout << "Limite Up\n";
+            return false;
+        }
+        if(PosMuros[NX][NY] == X || PosMuros[NX-1][NY] == X)
+        {
+            cout << "Hay Muro UP" << endl;
+            return false;
+        }
+    }
+    else if(D == 2) // Derecha
+    {
+        NX++;debuger
+        if(NX > 8)
+        {
+            cout << "Limite Der\n";
+            return false;
+        }
+        if(PosMuros[AX][AY] == Y || PosMuros[AX][AY-1] == Y)
+        {
+            cout << "Hay Muro DER" << endl;
+            return false;
+        }
+    }
+    else if(D == 3) // Abajo
+    {
+        NY++;debuger
+        if(NY > 8)
+        {
+            cout << "Limite aba\n";
+            return false;
+        }
+        if(PosMuros[AX][AY] == X || PosMuros[AX-1][AY] == X)
+        {
+            cout << "Hay Muro DN" << endl;
+            system("pause");
+            return false;
+        }
+    }
+    else if(D == 4) // Izquierda
+    {
+        NX--;debuger
+        if(NX < 0)
+        {
+            cout << "Limite izq\n";
+            return false;
+        }
+        if(PosMuros[NX][NY] == Y || PosMuros[NX][NY-1] == Y)
+        {
+            cout << "Hay Muro IZQ" << endl;
+            return false;
+        }
+    }
+    if(Jugador == A)
+    {
+        if(FlagA[NX][NY] == true)
+        {
+            cout << "Volvio"<<endl;
+            return false;
+        }
+        FlagA[AX][AY] = true;
+        if(NY == 8)
+        {
+            cout << "Salida";
+            return true;
+        }
+    }
+    else if(Jugador == B) {if(NX == 0) return true;}
+    return (Salida(Jugador, NX, NY, 1) ||
+            Salida(Jugador, NX, NY, 2) ||
+            Salida(Jugador, NX, NY, 3) ||
+            Salida(Jugador, NX, NY, 4));
+}
+
+
+/*bool Salida(int Jugador, int PosX, int PosY, int Dire)
 {
     //int Limite = (Jugador == A)?(8):(0);
     //if((Y == 0 && Jugador == B) || (Y == 8 && Jugador == A))
@@ -261,15 +360,17 @@ bool Salida(int Jugador, int PosX, int PosY, int Dire)
 
     return c1 || c2 || c3 || c4;
     //return true;
-}
+}*/
 
 bool ComprobarSalida()
 {
-    memset( &FlagA[0][0], false, sizeof(FlagA) );
-    memset( &FlagB[0][0], false, sizeof(FlagB) );
-    bool SA = Salida(A, Posicion[A][X], Posicion[A][Y], 2);
-    bool SB = true;//Salida(B, Posicion[B][X], Posicion[B][Y]);
-
+    memset( &FlagA[0][0], 0, sizeof(FlagA) );
+    memset( &FlagB[0][0], 0, sizeof(FlagB) );
+    //FlagA[Posicion[A][X]][Posicion[A][Y]] = true;
+    bool SA = Salida(A, Posicion[A][X], Posicion[A][Y], 3);
+    bool SB = true;//Salida(B, Posicion[B][X], Posicion[B][Y], 0);
+    cout << "Salida de A: " << SA << endl;
+    cout << "Saluda de B: " << SB << endl;
     system("pause");
     //return true;
     if(SA == true && SB == true) return true; else return false;
@@ -277,7 +378,7 @@ bool ComprobarSalida()
 
 int ComprobarPosMuro()
 {
-    Mensaje = "jjjjj";
+    Mensaje = " ";
     //Comprobaremos que no haya muros al rededor del nuevo
     int Orientacion = NextMuro[IDXMuro][IDYMuro]; // Si esta en X o Y
     if(PosMuros[IDXMuro][IDYMuro] == NextMuro[IDXMuro][IDYMuro])
@@ -308,17 +409,19 @@ int ComprobarPosMuro()
             return 0;
         }
     }
+    PosMuros[IDXMuro][IDYMuro] = NextMuro[IDXMuro][IDYMuro]; // Ponemos el muro nuevo
     if(ComprobarSalida()) // Comprobamos que tengamos una salida para los dos jugadores
     {
-cout << "Si";
-    system("pause");
-        PosMuros[IDXMuro][IDYMuro] = NextMuro[IDXMuro][IDYMuro]; // Ponemos el muro nuevo
+        cout << "Si";
+        system("pause");
+        //PosMuros[IDXMuro][IDYMuro] = NextMuro[IDXMuro][IDYMuro]; // Ponemos el muro nuevo
         MurosTotales[Turno]--;
     }
     else
     {
-cout << "No";
-    system("pause");
+        PosMuros[IDXMuro][IDYMuro] = -1; // Quitamos el que pusimos si bloquea el camino
+        cout << "No";
+        system("pause");
         Mensaje = "Estas bloqueando el camino. Eso esta prohibido!";
         Beep(700, 250);
         return 0;
