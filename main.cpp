@@ -221,14 +221,14 @@ int ComprobarProximaPos(int DaEnter = 0, int UPorIZQ = 3) //0 UP
     }
     return 1;
 }
-#define debuger cout << "NX: " << NX << " NY: " << NY << " AX: " << AX << " AY: " << AY << endl;
+#define debuger //cout << "NX: " << NX << " NY: " << NY << " AX: " << AX << " AY: " << AY << endl;
 bool Salida(int Jugador, int AX, int AY, int D)
 {
     //system("pause");
     int NY, NX;
     NY = AY;
     NX = AX;
-    if(D == 1) // Arriba
+    /*if(D == 1) // Arriba
     {
         cout << "UP\n";
     }
@@ -243,19 +243,19 @@ bool Salida(int Jugador, int AX, int AY, int D)
     else if(D == 4) // Izquierda
     {
         cout << "izq\n";
-    }
+    }*/
 
     if(D == 1) // Arriba
     {
         NY--;debuger
         if(NY < 0)
         {
-            cout << "Limite Up\n";
+            //cout << "Limite Up\n";
             return false;
         }
         if(PosMuros[NX][NY] == X || PosMuros[NX-1][NY] == X)
         {
-            cout << "Hay Muro UP" << endl;
+            //cout << "Hay Muro UP" << endl;
             return false;
         }
     }
@@ -264,12 +264,12 @@ bool Salida(int Jugador, int AX, int AY, int D)
         NX++;debuger
         if(NX > 8)
         {
-            cout << "Limite Der\n";
+            //cout << "Limite Der\n";
             return false;
         }
         if(PosMuros[AX][AY] == Y || PosMuros[AX][AY-1] == Y)
         {
-            cout << "Hay Muro DER" << endl;
+            //cout << "Hay Muro DER" << endl;
             return false;
         }
     }
@@ -278,13 +278,12 @@ bool Salida(int Jugador, int AX, int AY, int D)
         NY++;debuger
         if(NY > 8)
         {
-            cout << "Limite aba\n";
+            //cout << "Limite aba\n";
             return false;
         }
         if(PosMuros[AX][AY] == X || PosMuros[AX-1][AY] == X)
         {
-            cout << "Hay Muro DN" << endl;
-            system("pause");
+            //cout << "Hay Muro DN" << endl;
             return false;
         }
     }
@@ -293,12 +292,12 @@ bool Salida(int Jugador, int AX, int AY, int D)
         NX--;debuger
         if(NX < 0)
         {
-            cout << "Limite izq\n";
+            //cout << "Limite izq\n";
             return false;
         }
         if(PosMuros[NX][NY] == Y || PosMuros[NX][NY-1] == Y)
         {
-            cout << "Hay Muro IZQ" << endl;
+            //cout << "Hay Muro IZQ" << endl;
             return false;
         }
     }
@@ -306,17 +305,32 @@ bool Salida(int Jugador, int AX, int AY, int D)
     {
         if(FlagA[NX][NY] == true)
         {
-            cout << "Volvio"<<endl;
+            //cout << "Volvio"<<endl;
             return false;
         }
         FlagA[AX][AY] = true;
         if(NY == 8)
         {
-            cout << "Salida";
+            //cout << "Salida A";
+            //system("pause");
             return true;
         }
     }
-    else if(Jugador == B) {if(NX == 0) return true;}
+    else if(Jugador == B)
+    {
+        if(FlagB[NX][NY] == true)
+        {
+            //cout << "Volvio"<<endl;
+            return false;
+        }
+        FlagB[AX][AY] = true;
+        if(NX == 0)
+        {
+           // cout << "Salida B";
+           // system("pause");
+            return true;
+        }
+    }
     return (Salida(Jugador, NX, NY, 1) ||
             Salida(Jugador, NX, NY, 2) ||
             Salida(Jugador, NX, NY, 3) ||
@@ -366,13 +380,20 @@ bool ComprobarSalida()
 {
     memset( &FlagA[0][0], 0, sizeof(FlagA) );
     memset( &FlagB[0][0], 0, sizeof(FlagB) );
-    //FlagA[Posicion[A][X]][Posicion[A][Y]] = true;
-    bool SA = Salida(A, Posicion[A][X], Posicion[A][Y], 3);
-    bool SB = true;//Salida(B, Posicion[B][X], Posicion[B][Y], 0);
-    cout << "Salida de A: " << SA << endl;
-    cout << "Saluda de B: " << SB << endl;
-    system("pause");
-    //return true;
+    // Verificamos al inicio las 4 direcciones de cada jugador, y si una da true, es que hay salida
+    bool SA = (Salida(A, Posicion[A][X], Posicion[A][Y], 1) ||
+               Salida(A, Posicion[A][X], Posicion[A][Y], 2) ||
+               Salida(A, Posicion[A][X], Posicion[A][Y], 3) ||
+               Salida(A, Posicion[A][X], Posicion[A][Y], 4)
+               );
+    bool SB = (Salida(B, Posicion[B][X], Posicion[B][Y], 1) ||
+               Salida(B, Posicion[B][X], Posicion[B][Y], 2) ||
+               Salida(B, Posicion[B][X], Posicion[B][Y], 3) ||
+               Salida(B, Posicion[B][X], Posicion[B][Y], 4)
+               );
+    //cout << "Salida de A: " << SA << endl;
+    //cout << "Saluda de B: " << SB << endl;
+    //system("pause");
     if(SA == true && SB == true) return true; else return false;
 }
 
@@ -412,16 +433,15 @@ int ComprobarPosMuro()
     PosMuros[IDXMuro][IDYMuro] = NextMuro[IDXMuro][IDYMuro]; // Ponemos el muro nuevo
     if(ComprobarSalida()) // Comprobamos que tengamos una salida para los dos jugadores
     {
-        cout << "Si";
-        system("pause");
-        //PosMuros[IDXMuro][IDYMuro] = NextMuro[IDXMuro][IDYMuro]; // Ponemos el muro nuevo
+        //cout << "Si";
+        //system("pause");
         MurosTotales[Turno]--;
     }
     else
     {
         PosMuros[IDXMuro][IDYMuro] = -1; // Quitamos el que pusimos si bloquea el camino
-        cout << "No";
-        system("pause");
+        //cout << "No\n";
+        //system("pause");
         Mensaje = "Estas bloqueando el camino. Eso esta prohibido!";
         Beep(700, 250);
         return 0;
