@@ -27,6 +27,8 @@ int IDYMuro = 0;
 int Posicion[2][2] = {{4, 0}, {4, 8}}; // X, Y
 int NextPosi[2][2] = {{4, 0}, {4, 8}}; // X, Y
 
+bool FlagA[8][8], FlagB[8][8];
+
 int MurosTotales[2] = {5, 5};
 bool Turno = A; // False: Turno de A || True: Turno de B
 bool FichaActual = PEON;
@@ -46,15 +48,23 @@ void Debug()
     cout << "Posicion[A][Y]: " << Posicion[A][Y] << " __ NextPosi[A][Y]: " << NextPosi[A][Y] << endl;
     cout << "Posicion[B][X]: " << Posicion[B][X] << " __ NextPosi[B][X]: " << NextPosi[B][X] << endl;
     cout << "Posicion[B][Y]: " << Posicion[B][Y] << " __ NextPosi[B][Y]: " << NextPosi[B][Y] << endl;
-    /*for(int j = 0; j < 8; j++) cout << "PosMuros[" << j << "] = " << PosMuros[j] << ";";*/
-    for(int j = 0; j < 8; j++)
+
+    /*for(int j = 0; j < 8; j++)
     {
         for(int i = 0; i < 8; i++)
         {
             cout << "NM[" << j << "][" << i << "] = " << NextMuro[j][i] << "; ";
         }
         cout << endl;
-    }
+    }*/
+    /*for(int j = 0; j < 8; j++)
+    {
+        for(int i = 0; i < 8; i++)
+        {
+            cout << "PM[" << j << "][" << i << "] = " << PosMuros[j][i] << "; ";
+        }
+        cout << endl;
+    }*/
     cout << "IDXMuro: " << IDXMuro << " IDYMuro: " << IDYMuro;
     cout << "\n";
 }
@@ -96,14 +106,14 @@ void ImprimirTablero()
                 if(NextMuro[j][i] != -1)
                 {
                     if(j < 8 && i < 8 && NextMuro[j][i] == Y) cout << "4"; // Pone el # en la linea jugable
-                    else if(j < 8 && i > 0 && i < 8 && PosMuros[j][i-1] == Y) cout << "2"; else cout << " "; // Acá puede haber un muro vertical
-                    //La comprobación de la linea de arriba es para poner el 2
+                    else if(j < 8 && i > 0 && i < 8 && PosMuros[j][i-1] == Y) cout << "2"; else cout << " "; // Aca puede haber un muro vertical
+                    //La comprobacion de la linea de arriba es para poner el 2
                 }
                 else
                 {
                     if(j < 8 && i < 8 && PosMuros[j][i] == Y) cout << "1"; // Pone el # en la linea jugable
                     else if(j < 8 && i > 0 && i < 8 && PosMuros[j][i-1] == Y && NextMuro[j][i-1] == -1) cout << "2";
-                    else cout << " "; // Acá puede haber un muro vertical
+                    else cout << " "; // Aca puede haber un muro vertical
                 }
             }
 
@@ -118,23 +128,31 @@ void ImprimirTablero()
             else if(j < 8 && i < 8 && PosMuros[j][i] == X) cout << "###";
             else if(j < 8 && j > 0 && i < 8 && PosMuros[j-1][i] == X) // Si en la anterior hay muro
             {
-                cout << " "; // Acá puede haber un muro horizontal
+                if(PosMuros[j][i] == Y) cout << "3"; else if(NextMuro[j][i] == Y) cout << "6"; else cout << " "; // Aca puede haber un muro horizontal
             }
             else
             {
                 if(j < 8 && i < 8 && PosMuros[j][i] == Y) cout << " 3"; // Pone el # en la linea de espacios con un espacio antes
                 else if(j < 8 && i < 8 && NextMuro[j][i] == Y) cout << " 6";
-                else cout << "  ";
+                else
+                {
+                    cout << "  ";
+                }
             }
+
         }
+        bool cont = false;
+        for(int h = 0; h < 8; h++) if(NextMuro[h][i] == X/* || PosMuros[i][h] == X*/) cont = true;
+        if(cont == true) cout << "\e[D"; // Elimina el espacio todo feo que queda y desordena el tablero
+        //cout << " ";
         cout << "\xBA";
         if(i == 0) cout << "\tEs el turno del jugador " << ( (Turno == A)?("A"):("B") ) << ". Muros Disponibles: " << MurosTotales[Turno];
-        if(i == 1) cout << "\t@: La ficha actual es: " << ( (FichaActual == PEON)?("Peon"):("Muro") );
+        if(i == 1) cout << "\t@: La ficha actual es: " << ( (FichaActual == PEON)?("Peon"):("Muro ")) << ( (FichaActual == MURO)?(NextMuro[IDXMuro][IDYMuro]):(-2) );
         if(i == 3) cout << "\t" << Mensaje;
         if(i == 4) cout << "\tPara mover el Peon/Muro, usa las flechas";
         if(i == 5) cout << "\tCon el Muro, usa la letra O para cambiar entre vertical y horizontal";
         if(i == 6) cout << "\tPara cambiar entre Peon y Muro, usa TAB";
-        if(i == 7) cout << "\tPara terminar el turno y mover el Peon/Muro a la posición elegida, usa ENTER";
+        if(i == 7) cout << "\tPara terminar el turno y mover el Peon/Muro a la posicion elegida, usa ENTER";
         cout << endl;
     }
 
@@ -147,7 +165,7 @@ void ImprimirTablero()
     Debug();
 }
 
-int ComprobarProximaPos(int DaEnter = 0)
+int ComprobarProximaPos(int DaEnter = 0, int UPorIZQ = 3) //0 UP
 {
     Mensaje = " ";
     if(NextPosi[Turno][X] < 0 || // Llego al limite izquierdo
@@ -159,6 +177,8 @@ int ComprobarProximaPos(int DaEnter = 0)
         Beep(700, 250);
         return 0;
     }
+
+
     if(NextPosi[B][Y] == 0 || // B LLego al limite contrario
     NextPosi[A][Y] == 8)   // A LLego al limite contrario
     {
@@ -166,9 +186,14 @@ int ComprobarProximaPos(int DaEnter = 0)
         Mensaje = "POSIBLE GANADOR!!!. Solo debes presionar ENTER, jugador " + (string)((Turno == A)?(JUGADOR_A):(JUGADOR_B));
 
     }
+            if(UPorIZQ == 3) // abajo
+        {
+
+        }
     if(DaEnter == 1) // Presiona Enter
     {
-        if(NextPosi[Turno][X] == Posicion[Turno][X] && NextPosi[Turno][Y] == Posicion[Turno][Y]) // La posición es igual
+
+        if(NextPosi[Turno][X] == Posicion[Turno][X] && NextPosi[Turno][Y] == Posicion[Turno][Y]) // La posicion es igual
         {
             Mensaje = "No puedes mover en la misma posicion al Peon!";
             Beep(600, 250);
@@ -181,7 +206,7 @@ int ComprobarProximaPos(int DaEnter = 0)
             Beep(200, 250);
             return 2;
         }*/
-        else // Movera a la nueva posición
+        else // Movera a la nueva posicion
         {
 
             Posicion[Turno][X] = NextPosi[Turno][X];
@@ -200,7 +225,123 @@ int ComprobarProximaPos(int DaEnter = 0)
     return 1;
 }
 
+bool Salida(int Jugador, int PosX, int PosY, int Dire)
+{
+    //int Limite = (Jugador == A)?(8):(0);
+    //if((Y == 0 && Jugador == B) || (Y == 8 && Jugador == A))
+    //if(Jugador == B) cout << "Salida: " << Jugador << "-" << PosX << "-" << PosY << endl;
+    //system("pause");
+    cout << "Jugador: " << Jugador << " PosX: " << PosX << " PosY: " << PosY << endl;
+    if(Jugador == A && FlagA[PosX][PosY] == true || Jugador == B && FlagB[PosX][PosY] == true) { cout << "\tYa paso por aca\n"; return false; }
 
+    if(Jugador == A) FlagA[PosX][PosY] = true;
+    else FlagB[PosX][PosY] = true;
+
+    if(Dire == 1 || Dire == 2)
+    {
+        if(PosMuros[PosX][PosY] == X)
+        {
+
+        }
+    }
+    if((PosY == 0 && Jugador == B) || // Parte Superior. Para el jugador A es fuera del limite
+       (PosY == 8 && Jugador == A)
+       ) {cout << "\tLlego a la salida\n"; return true;}
+
+    if((PosY == -1 && Jugador == A) || // Parte Superior. Para el jugador A es fuera del limite
+       (PosY ==  9 && Jugador == B) || // Parte inf.      Para el jugador B es fuera del limite
+       PosX == -1 || PosX == 9
+       ) {cout << "\tFuera del limite\n"; return false;}
+
+    bool    c1 = Salida(Jugador, PosX, PosY-1, 1), // arriba
+            c2 = Salida(Jugador, PosX, PosY+1, 2), // Abajo
+            c3 = Salida(Jugador, PosX-1, PosY, 3), // Izquierda
+            c4 = Salida(Jugador, PosX+1, PosY, 4); // Derecha
+    //cout << "\tRetorna: " << c1 || c2 || c3 || c4;
+
+    return c1 || c2 || c3 || c4;
+    //return true;
+}
+
+bool ComprobarSalida()
+{
+    memset( &FlagA[0][0], false, sizeof(FlagA) );
+    memset( &FlagB[0][0], false, sizeof(FlagB) );
+    bool SA = Salida(A, Posicion[A][X], Posicion[A][Y], 2);
+    bool SB = true;//Salida(B, Posicion[B][X], Posicion[B][Y]);
+
+    system("pause");
+    //return true;
+    if(SA == true && SB == true) return true; else return false;
+}
+
+int ComprobarPosMuro()
+{
+    Mensaje = "jjjjj";
+    //Comprobaremos que no haya muros al rededor del nuevo
+    int Orientacion = NextMuro[IDXMuro][IDYMuro]; // Si esta en X o Y
+    if(PosMuros[IDXMuro][IDYMuro] == NextMuro[IDXMuro][IDYMuro])
+    {
+        Mensaje = "No puedes poner el muro en esta posición!";
+        Beep(700, 250);
+        return 0;
+    }
+    if(Orientacion == Y)
+    {
+        if((IDYMuro > 0 && IDYMuro < 8) &&
+           ((PosMuros[IDXMuro][IDYMuro+1] != -1 && PosMuros[IDXMuro][IDYMuro+1] == Y) ||
+            (PosMuros[IDXMuro][IDYMuro-1] != -1 && PosMuros[IDXMuro][IDYMuro-1] == Y) )) // Hay muros arriba, o abajo
+        {
+            Mensaje = "No puedes poner el muro en esta posición!";
+            Beep(700, 250);
+            return 0;
+        }
+    }
+    else if(Orientacion == X)
+    {
+        if(
+           (IDXMuro < 8 && PosMuros[IDXMuro+1][IDYMuro] != -1 && PosMuros[IDXMuro+1][IDYMuro] == X) ||
+           (IDXMuro > 0 && PosMuros[IDXMuro-1][IDYMuro] != -1 && PosMuros[IDXMuro-1][IDYMuro] == X) ) // Hay muros a la izq, o der
+        {
+            Mensaje = "No puedes poner el muro en esta posición!";
+            Beep(700, 250);
+            return 0;
+        }
+    }
+    if(ComprobarSalida()) // Comprobamos que tengamos una salida para los dos jugadores
+    {
+cout << "Si";
+    system("pause");
+        PosMuros[IDXMuro][IDYMuro] = NextMuro[IDXMuro][IDYMuro]; // Ponemos el muro nuevo
+        MurosTotales[Turno]--;
+    }
+    else
+    {
+cout << "No";
+    system("pause");
+        Mensaje = "Estas bloqueando el camino. Eso esta prohibido!";
+        Beep(700, 250);
+        return 0;
+    }
+    return 1; // No hay error
+}
+
+void CambiarFicha()
+{
+    FichaActual = (FichaActual == PEON)?(MURO):(PEON);
+    IDXMuro = IDYMuro = 0;
+    memset( &NextMuro[0][0], -1, sizeof(NextMuro) );
+    if(FichaActual == MURO)
+    {
+        if(MurosTotales[Turno] < 1) // Ya no tiene muros
+        {
+            FichaActual = PEON;
+            Mensaje = "Ya no tienes muros disponibles para usar";
+        }
+        else NextMuro[IDXMuro][IDYMuro] = X;
+
+    }
+}
 
 void GameLoop()
 {
@@ -214,13 +355,26 @@ void GameLoop()
             if(c == 27) break; // tecla ESC
             else if(c == 13) // Presiona Enter y hace su movimiento
             {
-                int check = ComprobarProximaPos(1);
-                if(check == 1) Turno = NextTurno;
-                else if(check == 2)
+                if(FichaActual == MURO)
                 {
-                    // Gana el jugador en Turno
-                    ImprimirTablero();
-                    break;
+                    int check = ComprobarPosMuro();
+                    if(check == 0) // Nope
+                    {
+                        ImprimirTablero();
+                        continue;
+                    }
+                    else if(check == 1) CambiarFicha(), Turno = NextTurno;
+                }
+                else
+                {
+                    int check = ComprobarProximaPos(1);
+                    if(check == 1) Turno = NextTurno;
+                    else if(check == 2)
+                    {
+                        // Gana el jugador en Turno
+                        ImprimirTablero();
+                        break;
+                    }
                 }
             }
             else // Hacemos esto para evitar que las dos primeras lineas de abajo surtan efecto al presionar ENTER
@@ -228,14 +382,11 @@ void GameLoop()
 
                 if(c == 9) // Presiona TAB :: Cambia entre peon, y muro
                 {
-                    FichaActual = (FichaActual == PEON)?(MURO):(PEON);
-                    IDXMuro = IDYMuro = 0;
-                    memset( &NextMuro[0][0], -1, sizeof(NextMuro) );
-                    NextMuro[IDXMuro][IDYMuro] = X;
+                    CambiarFicha();
                     ImprimirTablero();
                     continue;
                 }
-                if((c == 111 || c == 79) && FichaActual == MURO) // presiona la letra O ó o (Mayuscula y minuscula)
+                if((c == 111 || c == 79) && FichaActual == MURO) // presiona la letra O o o (Mayuscula y minuscula)
                 {
                     NextMuro[IDXMuro][IDYMuro] = (NextMuro[IDXMuro][IDYMuro] == X)?(Y):(X);
                     ImprimirTablero();
@@ -250,19 +401,40 @@ void GameLoop()
                     if(c == 72)  // Flecha arriba
                     {
                         NextPosi[Turno][Y] = Posicion[Turno][Y] - MoverCasillas;
+                        if(PosMuros[NextPosi[Turno][X]][NextPosi[Turno][Y]] == X || PosMuros[NextPosi[Turno][X]-1][NextPosi[Turno][Y]] == X)
+                        {
+                           NextPosi[Turno][Y] = Posicion[Turno][Y];
+                           Beep(900, 250);
+
+                        }
                     }
                     else if(c == 80) // Flecha abajo
                     {
                         NextPosi[Turno][Y] = Posicion[Turno][Y] + MoverCasillas;
+                        if(PosMuros[Posicion[Turno][X]][Posicion[Turno][Y]] == X || PosMuros[Posicion[Turno][X]-1][Posicion[Turno][Y]] == X)
+                        {
+                            NextPosi[Turno][Y] = Posicion[Turno][Y];
+                            Beep(900, 250);
+                        }
                     }
                     else if(c == 75) // Felcha Izq
                     {
                         NextPosi[Turno][X] = Posicion[Turno][X] - MoverCasillas;
+                        if(PosMuros[NextPosi[Turno][X]][NextPosi[Turno][Y]] == Y || PosMuros[NextPosi[Turno][X]][NextPosi[Turno][Y]-1] == Y)
+                        {
+                            NextPosi[Turno][X] = Posicion[Turno][X];
+                            Beep(900, 250);
+                        }
 
                     }
                     else if(c == 77) // Flecha derecha
                     {
                         NextPosi[Turno][X] = Posicion[Turno][X] + MoverCasillas;
+                        if(PosMuros[Posicion[Turno][X]][Posicion[Turno][Y]] == Y || PosMuros[Posicion[Turno][X]][Posicion[Turno][Y]-1] == Y)
+                        {
+                            NextPosi[Turno][X] = Posicion[Turno][X];
+                            Beep(900, 250);
+                        }
                     }
                     else continue;
                     ComprobarProximaPos();
@@ -272,7 +444,6 @@ void GameLoop()
                         Mensaje = "Mueves dos casillas saltando al enemigo.";
                         goto Mover2Casillas;
                     }
-                    ImprimirTablero();
                 }
                 else // Esta moviendo el Muro
                 {
@@ -304,10 +475,9 @@ void GameLoop()
                     else if(IDXMuro > 7) IDXMuro = 0;
                     if(IDYMuro > 7) IDYMuro = 0;
                     else if(IDYMuro < 0) IDYMuro = 7;
-                    ImprimirTablero();
                 }
             }
-
+            ImprimirTablero();
         }
         //Sleep(20);
     }
@@ -315,11 +485,12 @@ void GameLoop()
 
 int main ()
 {
+ //   system("mode 650");
     memset( &PosMuros[0][0], -1, sizeof(PosMuros) );
     memset( &NextMuro[0][0], -1, sizeof(NextMuro) );
-    PosMuros[1][1] = Y;
-    PosMuros[3][1] = Y;
-    PosMuros[4][7] = X;
+    PosMuros[1][1] = X;
+    PosMuros[3][1] = X;
+    PosMuros[5][1] = X;
     ImprimirTablero();
     GameLoop();
     return 0;
